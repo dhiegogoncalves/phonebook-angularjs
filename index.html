@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR" ng-app="phoneBook">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+    <link rel="stylesheet" type="text/css" href="css/ui.css">
+
+    <title>Lista Telefônica</title>
+
+    <script src="lib/angular/angular.min.js"></script>
+    <script src="lib/angular/i18n/angular-locale_pt-br.js"></script>
+    <script src="lib/angular/angular-messages.min.js"></script>
+    <script src="lib/serialGenerator/serialGeneratorService.js"></script>
+    <script src="lib/uiAccordion/uiAccordionDirective.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/values/configValues.js"></script>
+    <script src="js/controllers/phoneBookCtrl.js"></script>
+    <script src="js/services/contactsAPIService.js"></script>
+    <script src="js/services/operatorsAPIService.js"></script>
+    <script src="js/config/serialGeneratorConfig.js"></script>
+    <script src="js/filters/nameFilter.js"></script>
+    <script src="js/filters/ellipsisFilter.js"></script>
+    <script src="js/directives/uiAlertDirective.js"></script>
+    <script src="js/directives/uiDateDirective.js"></script>
+
+</head>
+
+<body ng-controller="phoneBookCtrl">
+    <div class="jumbotron">
+        <h3>{{app}}</h3>
+
+        <!--
+        <ui-accordions>
+            <ui-accordion title="Accordion 1">The standard chunk of Lorem Ipsum used since the 1500s is reproduced below
+                for
+                those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also
+                reproduced in their exact original form, accompanied by English versions from the 1914 translation by H.
+                Rackham.</ui-accordion>
+            <ui-accordion title="Accordion 2">The standard chunk of Lorem Ipsum used since the 1500s is reproduced below
+                for
+                those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also
+                reproduced in their exact original form, accompanied by English versions from the 1914 translation by H.
+                Rackham.</ui-accordion>
+        </ui-accordions>
+        <br>
+        -->
+
+        <ui-alert ng-show="error" title="Ops, aconteceu um problema!" message="error"></ui-alert>
+
+        <input class="form-control" type="text" ng-model="searchCriteria" placeholder="O que você está buscando?">
+        <table ng-show="contacts.length > 0" class="table table-striped">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Serial</th>
+                    <th><a href="" ng-click="sortContactsBy('name')">Nome</a></th>
+                    <th><a href="" ng-click="sortContactsBy('telephone')">Telefone</a></th>
+                    <th>Operadora</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-class="{'negrito': contact.selecionado}"
+                    ng-repeat="contact in contacts | filter:searchCriteria | orderBy:sortingCriteria:sortingDirection">
+                    <td><input type="checkbox" ng-model="contact.selected" /></td>
+                    <td>{{contact.serial}}</td>
+                    <td>{{contact.name | name | ellipsis:25}}</td>
+                    <td>{{contact.telephone}}</td>
+                    <td>{{contact.operator.name | uppercase}}</td>
+                    <td>{{contact.date | date:'dd/MM/yyyy HH:mm'}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <hr />
+
+        {{contact.date}}
+        <form name="contactForm">
+            <input class="form-control" type="text" ng-model="contact.name" name="name" placeholder="Nome"
+                ng-required="true" ng-minlength="10" />
+            <input class="form-control" type="text" ng-model="contact.telephone" name="telephone" placeholder="Telefone"
+                ng-required="true" ng-pattern="/^\d{4,5}-\d{4}$/" />
+            <!--<input class="form-control" type="text" ng-model="contact.date" name="date" placeholder="Data"
+                ng-required="true" ui-date />-->
+            <select class="form-control" ng-model="contact.operator"
+                ng-options="operator.name + ' ( ' + (operator.price | currency) + ' ) ' for operator in operators | orderBy:'name'"
+                name="operator" ng-required="true">
+                <option value="">Selecione uma operadora</option>
+            </select>
+        </form>
+
+        <div ng-show="contactForm.name.$dirty" ng-messages="contactForm.name.$error">
+            <div ng-message="required" class="alert alert-danger">
+                Por favor, preencha o name!
+            </div>
+            <div ng-message="minlength" class="alert alert-danger">
+                O campo name deve ter no mínimo 10 caracteres.
+            </div>
+        </div>
+
+        <div ng-show="contactForm.telephone.$error.required && contactForm.telephone.$dirty" class="alert alert-danger">
+            Por favor, preencha o telephone!
+        </div>
+        <div ng-show="contactForm.telephone.$error.pattern" class="alert alert-danger">
+            O campo telephone deve ter o formato DDDDD-DDDD.
+        </div>
+
+        <div ng-show="contactForm.operator.$error.required && contactForm.operator.$dirty" class="alert alert-danger">
+            Por favor, selecione a operadora!
+        </div>
+
+        <button class="btn btn-primary btn-block" ng-click="addContact(contact)"
+            ng-disabled="contactForm.$invalid">Adicionar contato</button>
+        <button class="btn btn-danger btn-block" ng-click="deleteContacts(contacts)"
+            ng-show="isSelectedContact(contacts)">Apagar contato</button>
+    </div>
+    <div ng-include="'view/footer.html'"></div>
+</body>
+
+</html>

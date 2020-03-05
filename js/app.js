@@ -1,0 +1,1 @@
+angular.module("phoneBook", ["ngMessages", "serialGenerator", "uiAccordion"]);
